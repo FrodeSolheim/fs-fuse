@@ -1,0 +1,31 @@
+autoconf
+automake
+bison
+flex
+gcc
+gettext
+libbz2-dev
+libglib2.0-dev
+libpng-dev
+libsamplerate0-dev
+libsdl2-dev
+libsdl2-ttf-dev
+libtool
+libxml2-dev
+zlib1g-dev
+
+# Raspberry Pi 3
+# build-essential is already the newest version (12.6).
+# libpng-dev is already the newest version (1.6.36-6).
+# libpng-dev set to manually installed.
+# zlib1g-dev is already the newest version (1:1.2.11.dfsg-1).
+# zlib1g-dev set to manually installed.
+
+# libaudiofile-dev
+
+# libfreetype6-dev
+# libmpeg2-4-dev
+# libjpeg-dev
+# libxi-dev
+# libxtst-dev
+# zip

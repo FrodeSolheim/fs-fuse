@@ -109,6 +109,10 @@
 
 #include "z80/z80.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
 /* What name were we called under? */
 const char *fuse_progname;
 
@@ -168,11 +172,15 @@ static int do_start_files( start_files_t *start_files );
 
 static int fuse_end(void);
 
+#ifdef FSEMU
+int fuse_main(int argc, char **argv)
+#else
 #ifdef UI_WIN32
 int fuse_main(int argc, char **argv)
 #else
 int main(int argc, char **argv)
 #endif
+#endif  // FSEMU2
 {
   int r;
 
@@ -484,9 +492,12 @@ static void fuse_show_copyright(void)
    FUSE_COPYRIGHT "; see the file\n"
    "'AUTHORS' for more details.\n"
    "\n"
+#ifdef FSEMU
+#else
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
    "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "\n"
+#endif
    "This program is distributed in the hope that it will be useful,\n"
    "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
@@ -526,9 +537,13 @@ static void fuse_show_help( void )
    "--tape <filename>      Open tape file <filename>.\n"
    "--version              Print version number and exit.\n"
    "\n"
+#ifdef FSEMU
+   );
+#else
    "For help, please mail <fuse-emulator-devel@lists.sf.net> or use\n"
    "the forums at <http://sourceforge.net/p/fuse-emulator/discussion/>.\n"
    "For complete documentation, see the manual page of Fuse.\n\n" );
+#endif
 }
 
 /* Stop all activities associated with actual Spectrum emulation */

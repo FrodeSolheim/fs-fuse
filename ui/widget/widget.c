@@ -91,7 +91,11 @@ typedef struct widget_recurse_t {
 static widget_recurse_t widget_return[10]; /* The stack to recurse on */
 
 /* The settings used whilst playing with an options dialog box */
+#ifdef FSEMU
+// Defined twice? Also in ui/widget/options.c
+#else
 settings_info widget_options_settings;
+#endif
 
 static int widget_read_font( const char *filename )
 {

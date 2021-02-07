@@ -95,12 +95,20 @@ print hashline( __LINE__ ), << 'CODE';
 #include "ui/ui.h"
 #include "utils.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
 /* The name of our configuration file */
+#ifdef FSEMU
+/* No fuse config file should be used */
+#else
 #ifdef WIN32
 #define CONFIG_FILE_NAME "fuse.cfg"
 #else				/* #ifdef WIN32 */
 #define CONFIG_FILE_NAME ".fuserc"
 #endif				/* #ifdef WIN32 */
+#endif
 
 /* The current settings of options, etc */
 settings_info settings_current;
@@ -166,6 +174,10 @@ void settings_defaults( settings_info *settings )
 static int
 read_config_file( settings_info *settings )
 {
+#ifdef FSEMU
+  /* Only load fake settings XML created by FS-Fuse */
+  xmlDocPtr doc = fsfuse_config_create_settings_xml();
+#else
   const char *cfgdir; char path[ PATH_MAX ];
 
   xmlDocPtr doc;
@@ -184,6 +196,7 @@ read_config_file( settings_info *settings )
     ui_error( UI_ERROR_ERROR, "error reading config file" );
     return 1;
   }
+#endif
 
   if( parse_xml( doc, settings ) ) {
     xmlFreeDoc( doc );
@@ -271,6 +284,9 @@ print hashline( __LINE__ ), << 'CODE';
 int
 settings_write_config( settings_info *settings )
 {
+#ifdef FSEMU
+  /* Do not write config, do not interfere with system-installed Fuse */
+#else
   const char *cfgdir; char path[ PATH_MAX ], buffer[80];
 
   xmlDocPtr doc; xmlNodePtr root;
@@ -316,6 +332,7 @@ CODE
   xmlSaveFormatFile( path, doc, 1 );
 
   xmlFreeDoc( doc );
+#endif
 
   return 0;
 }

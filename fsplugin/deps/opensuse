@@ -1,0 +1,17 @@
+autoconf
+automake
+bison
+flex
+gcc
+gettext-tools
+glib2-devel
+libbz2-devel
+libpng-devel
+libsamplerate-devel
+libSDL2-devel
+libSDL2_ttf-devel
+libtool
+libXi-devel
+libxml2-devel
+perl
+zlib-devel

@@ -39,12 +39,21 @@
 #include "utils.h"
 #include "sdlkeyboard.h"
 
+#ifdef FSEMU
+// #include "fsgs.h"
+#include "screenshot.h"
+#include "../widget/widget.h"
+#include "../widget/widget_internals.h"
+#endif
+
 /* Map low byte of UCS-2(?) Unicode to Fuse input layer keysym for
    upper case letters */
 extern const keysyms_map_t unicode_keysyms_map[];
 
 static GHashTable *unicode_keysyms_hash;
 
+#ifdef FSEMU
+#else
 static input_key
 unicode_keysyms_remap( libspectrum_dword ui_keysym )
 {
@@ -54,6 +63,7 @@ unicode_keysyms_remap( libspectrum_dword ui_keysym )
 
   return ptr ? *ptr : INPUT_KEY_NONE;
 }
+#endif
 
 void
 sdlkeyboard_init(void)
@@ -66,7 +76,11 @@ sdlkeyboard_init(void)
     g_hash_table_insert( unicode_keysyms_hash, &( ptr3->ui ),
                          &( ptr3->fuse ) );
 
+#ifdef FSEMU
+  // Nope
+#else
   SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+#endif
 }
 
 void
@@ -75,19 +89,71 @@ sdlkeyboard_end(void)
   g_hash_table_destroy( unicode_keysyms_hash );
 }
 
+#ifdef FSEMU
+#else
+
 void
 sdlkeyboard_keypress( SDL_KeyboardEvent *keyevent )
 {
+#ifdef FSEMU_XXX_FSGS
+  static int paused = 0;
+  if (keyevent->keysym.sym == FSGS_KEY_MENU) {
+    if (ui_widget_level < 0) {
+      ui_popup_menu(INPUT_KEY_F1);
+    } else {
+      widget_end_widget(WIDGET_FINISHED_CANCEL);
+    }
+    return;
+  }
+  if (keyevent->keysym.mod & FSGS_MOD_MOD) {
+    switch (keyevent->keysym.sym) {
+    case FSGS_KEY_BORDER:
+        fsgs_cycle_border();
+        // display_refresh_main_screen();
+        break;
+    case FSGS_KEY_STRETCH:
+        fsgs_cycle_stretch();
+        // display_refresh_main_screen();
+        break;
+    case FSGS_KEY_PAUSE:
+      if (!paused) {
+        fuse_emulation_pause();
+        paused = 1;
+      } else {
+        fuse_emulation_unpause();
+        paused = 0;
+      }
+      break;
+    case FSGS_KEY_SCREENSHOT:
+      screenshot_write(fsgs_screenshot_path("full"), SCALER_NORMAL);
+      fsgs_set_screenshot_crop(32, 24, 256, 192);
+      screenshot_write(fsgs_screenshot_path("crop"), SCALER_NORMAL);
+      fsgs_set_screenshot_crop(0, 0, 0, 0);
+      break;
+    case FSGS_KEY_QUIT:
+      fuse_exiting = 1;
+      widget_end_all(WIDGET_FINISHED_CANCEL);
+      break;
+    default:
+      break;
+    }
+    return;
+  }
+#endif
   input_key fuse_keysym, unicode_keysym;
   input_event_t fuse_event;
 
   fuse_keysym = keysyms_remap( keyevent->keysym.sym );
 
+#ifdef FSEMU
+  printf("FIXME: keysym.unicode\n");
+#else
   /* Currently unicode_keysyms_map contains ASCII character keys */
   if( ( keyevent->keysym.unicode & 0xFF80 ) == 0 ) 
     unicode_keysym = unicode_keysyms_remap( keyevent->keysym.unicode );
   else
     unicode_keysym = INPUT_KEY_NONE;
+#endif
 
   if( fuse_keysym == INPUT_KEY_NONE && unicode_keysym == INPUT_KEY_NONE )
     return;
@@ -105,6 +171,14 @@ sdlkeyboard_keypress( SDL_KeyboardEvent *keyevent )
 void
 sdlkeyboard_keyrelease( SDL_KeyboardEvent *keyevent )
 {
+#ifdef FSEMU_XXX_FSGS
+  if (keyevent->keysym.sym == FSGS_KEY_MENU) {
+    return;
+  }
+  if (keyevent->keysym.mod & FSGS_MOD_MOD) {
+    return;
+  }
+#endif
   input_key fuse_keysym;
   input_event_t fuse_event;
 
@@ -121,3 +195,5 @@ sdlkeyboard_keyrelease( SDL_KeyboardEvent *keyevent )
 
   input_event( &fuse_event );
 }
+
+#endif

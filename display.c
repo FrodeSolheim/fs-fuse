@@ -617,6 +617,9 @@ get_beam_position( int *x, int *y )
 {
   if( tstates < machine_current->line_times[ 0 ] ) {
     *x = *y = -1;
+#ifdef FSEMU
+    // printf("get_beam_position %d %d\n", *x, *y);
+#endif
     return;
   }
 
@@ -626,6 +629,9 @@ get_beam_position( int *x, int *y )
   if( *y >= 0 && *y <= DISPLAY_SCREEN_HEIGHT )
     *x = ( tstates - machine_current->line_times[ *y ] ) / 4;
   else *x = 0;
+#ifdef FSEMU
+  // printf("get_beam_position %d %d\n", *x, *y);
+#endif
 }
 
 void

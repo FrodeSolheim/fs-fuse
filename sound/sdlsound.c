@@ -36,6 +36,22 @@
 #include "sound.h"
 #include "ui/ui.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
+#ifdef FSEMU
+
+static bool sound_stopped;
+
+// 48000 Hz, 50 fps * 2 channel ~ = 1920 samples per frame
+// #define MAX_BUFSIZE 2048
+// static int16_t sound_buffer[MAX_BUFSIZE];
+// static int16_t *sound_buffer_ptr;
+// static int sound_buffer_len;
+
+#else
+
 static void sdlwrite( void *userdata, Uint8 *stream, int len );
 
 sfifo_t sound_fifo;
@@ -46,9 +62,22 @@ sfifo_t sound_fifo;
 /* Records sound writer status information */
 static int audio_output_started;
 
+#endif
+
 int
 sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_lowlevel_init\n");
+  fsemu_audio_init();
+  // sound_buffer_ptr = sound_buffer;
+  *freqptr = fsemu_audio_frequency();
+  *stereoptr = 2;
+  if (sound_stopped) {
+    printf("[FUSE] FIXME: Maybe resume sound here (if paused)\n");
+  }
+  return 0;
+#else
   SDL_AudioSpec requested, received;
   int error;
   float hz;
@@ -142,23 +171,34 @@ sound_lowlevel_init( const char *device, int *freqptr, int *stereoptr )
   audio_output_started = 0;
 
   return 0;
+#endif
 }
 
 void
 sound_lowlevel_end( void )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_lowlevel_end\n");
+  printf("[FUSE] FIXME: Maybe pause here\n");
+  sound_stopped = true;
+#else
   SDL_PauseAudio( 1 );
   SDL_LockAudio();
   SDL_CloseAudio();
   SDL_QuitSubSystem( SDL_INIT_AUDIO );
   sfifo_flush( &sound_fifo );
   sfifo_close( &sound_fifo );
+#endif
 }
 
 /* Copy data to fifo */
 void
 sound_lowlevel_frame( libspectrum_signed_word *data, int len )
 {
+#ifdef FSEMU
+  fsemu_audiobuffer_update(data, len * 2);
+  fsemu_audiobuffer_frame_done();
+#else
   int i = 0;
 
   /* Convert to bytes */
@@ -183,7 +223,11 @@ sound_lowlevel_frame( libspectrum_signed_word *data, int len )
     SDL_PauseAudio( 0 );
     audio_output_started = 1;
   }
+#endif
 }
+
+#ifdef FSEMU
+#else
 
 #ifndef MIN
 #define MIN(a,b)    (((a) < (b)) ? (a) : (b))
@@ -208,3 +252,5 @@ sdlwrite( void *userdata, Uint8 *stream, int len )
   /* If we ran out of sound, do nothing else as SDL has prefilled
      the output buffer with silence :( */
 }
+
+#endif

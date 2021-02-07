@@ -68,7 +68,7 @@ LT_INIT
 
 dnl Check for host specific programs
 case "$host_os" in
-  mingw32*)
+  mingw*)
     AC_CHECK_TOOL([WINDRES], [windres])
     if test -z "$WINDRES" ; then
       AC_MSG_ERROR([windres is required to compile Fuse for $host hosts])
@@ -180,7 +180,7 @@ win32=auto)
 
 if test "$win32" = auto; then
 case "$host_os" in
-  mingw32*)
+  mingw*)
     win32=yes
     ;;
   *)
@@ -197,6 +197,18 @@ if test "$win32" = yes; then
                   UI=win32,
                   AC_MSG_ERROR([Win32 UI not found]))
 fi
+
+case "$host_os" in
+  *mingw*)
+    LIBS="$LIBS -lOpenGL32"
+    ;;
+  darwin*)
+    LIBS="$LIBS -framework OpenGL -framework IOKit"
+    ;;
+  *)
+    LIBS="$LIBS -lGL"
+    ;;
+esac
 
 dnl Look for svgalib (default=no)
 if test -z "$UI"; then
@@ -277,24 +289,11 @@ if test -z "$UI"; then
   fi
 fi
 
-dnl Look for SDL (default=no)
-if test -z "$UI"; then
-  AC_MSG_CHECKING(whether SDL UI requested)
-  AC_ARG_WITH(sdl,
-  [  --with-sdl              use SDL for user interface],
-  if test "$withval" = no; then sdl=no; else sdl=yes; fi,
-  sdl=no)
-  AC_MSG_RESULT($sdl)
-  if test "$sdl" = yes; then
-    SDL_VERSION=1.2.4
-    AM_PATH_SDL($SDL_VERSION,
-		AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
-		AC_DEFINE([USE_WIDGET], 1,
-		          [Defined if we're using a widget-based UI])
-		UI=sdl; WIDGET=widget,
-                AC_MSG_ERROR([SDL version $SDL_VERSION not found]))
-  fi
-fi
+PKG_CHECK_MODULES([SDL], [sdl2])
+AC_DEFINE([UI_SDL], 1, [Defined if the SDL UI in use])
+AC_DEFINE([USE_WIDGET], 1, [Defined if we're using a widget-based UI])
+UI=sdl
+WIDGET=widget
 
 dnl Look for null UI (default=no)
 if test -z "$UI"; then
@@ -670,11 +669,6 @@ if test "$stick" = yes; then
         AC_MSG_RESULT([no, use libjsw])
       else
         AC_MSG_RESULT(yes)
-        SDL_VERSION=1.2.4
-        AM_PATH_SDL($SDL_VERSION,		    
-          AC_DEFINE([USE_JOYSTICK], 1, [Defined if we're using hardware joysticks]),
-          AC_MSG_WARN([SDL version $SDL_VERSION not found - joystick support disabled])
-          stick=no)
       fi
       ;;
     wii)
@@ -738,7 +732,7 @@ sockets=yes)
 AC_MSG_RESULT($sockets)
 if test "$sockets" = yes; then
 case "$host_os" in
-  mingw32*)
+  mingw*)
     AC_CHECK_HEADER([winsock2.h], [LIBS="$LIBS -lws2_32"], [sockets=no])
     ;;
   *)
@@ -827,7 +821,7 @@ case "$host_os" in
   morphos)
     COMPAT_OSNAME='morphos'
     ;;
-  mingw32*)
+  mingw*)
     COMPAT_OSNAME='win32'
     AC_DEFINE([WINVER], 0x0500, [Minimal supported version of Windows is 2000])
     AC_DEFINE([_WIN32_IE], 0x501, [Internet Explorer 5.01 or higher is required])

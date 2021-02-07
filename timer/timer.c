@@ -33,6 +33,10 @@
 #include "timer.h"
 #include "ui/ui.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
 static void timer_frame_callback_sound( libspectrum_dword last_tstates );
 
 /*
@@ -148,6 +152,9 @@ extern sfifo_t sound_fifo;
 static void
 timer_frame_callback_sound( libspectrum_dword last_tstates )
 {
+#ifdef FSEMU
+  fsemu_frame_log_epoch("timer_frame_callback_sound\n");
+#else
   for(;;) {
 
     /* Sleep while fifo is full */
@@ -158,6 +165,7 @@ timer_frame_callback_sound( libspectrum_dword last_tstates )
     }
 
   }
+#endif
 
   event_add( last_tstates + machine_current->timings.tstates_per_frame,
              timer_event );
@@ -178,19 +186,29 @@ timer_frame_callback_sound( libspectrum_dword last_tstates )
 void
 timer_start_fastloading( void )
 {
+#ifdef FSEMU
+  // Keep sound on, we're not syncing to the sound system
+  // FIXME: Maybe integrate sound pausing/unpausing with fsemu
+#else
   /* If we're fastloading, turn sound off */
   if( settings_current.fastload ) sound_pause();
+#endif
 }
 
 void
 timer_stop_fastloading( void )
 {
+#ifdef FSEMU
+  // Keep sound on, we're not syncing to the sound system
+  // FIXME: Maybe integrate sound pausing/unpausing with fsemu
+#else
   /* If we were fastloading, sound was off, so turn it back on, and
      reset the speed counter */
   if( settings_current.fastload ) {
     sound_unpause();
     timer_estimate_reset();
   }
+#endif
 }
 
 int

@@ -95,8 +95,42 @@ compat_get_next_path( path_context *ctx )
     path2 = dirname( buffer );
     snprintf( ctx->path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", path2,
               path_segment );
+    printf("%s\n", ctx->path);
     return 1;
 
+#ifdef FSEMU
+  case 2:
+    switch( ctx->type ) {
+#ifdef __APPLE__
+    case UTILS_AUXILIARY_LIB: path_segment = "../../../../../Data"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "../../../../../Data"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "../../../../../Data"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "../../../../../Data"; break;
+#else
+    case UTILS_AUXILIARY_LIB: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "../../Data"; break;
+#endif
+    default:
+      ui_error( UI_ERROR_ERROR, "unknown auxiliary file type %d", ctx->type );
+      return 0;
+    }
+
+    if( compat_is_absolute_path( fuse_progname ) ) {
+      strncpy( buffer, fuse_progname, PATH_MAX );
+      buffer[ PATH_MAX - 1 ] = '\0';
+    } else {
+      get_relative_directory( buffer, PATH_MAX );
+    }
+
+    path2 = dirname( buffer );
+    snprintf( ctx->path, PATH_MAX, "%s" FUSE_DIR_SEP_STR "%s", path2,
+              path_segment );
+    printf("%s\n", ctx->path);
+    return 1;
+
+#else
     /* Then where we may have installed the data files */
   case 2:
 
@@ -107,7 +141,7 @@ compat_get_next_path( path_context *ctx )
 #endif				/* #ifndef ROMSDIR */
     strncpy( ctx->path, path2, PATH_MAX ); buffer[ PATH_MAX - 1 ] = '\0';
     return 1;
-
+#endif
   case 3: return 0;
   }
   ui_error( UI_ERROR_ERROR, "unknown path_context state %d", ctx->state );

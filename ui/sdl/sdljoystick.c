@@ -41,16 +41,22 @@
 #include "ui/ui.h"
 #include "ui/uijoystick.h"
 
+#ifdef FSEMU
+#else
 static SDL_Joystick *joystick1 = NULL;
 static SDL_Joystick *joystick2 = NULL;
 
 static void do_axis( int which, Sint16 value, input_key negative,
 		     input_key positive );
 static void do_hat( int which, Uint8 value, Uint8 mask, input_key direction );
+#endif
 
 int
 ui_joystick_init( void )
 {
+#ifdef FSEMU
+  return 0;
+#else
   int error, retval;
 
 #ifdef UI_SDL
@@ -101,6 +107,7 @@ ui_joystick_init( void )
   SDL_JoystickEventState( SDL_ENABLE );
 
   return retval;
+#endif
 }
 
 void
@@ -133,6 +140,9 @@ ui_joystick_poll( void )
 #endif
 
 }
+
+#ifdef FSEMU
+#else
 
 static void
 button_action( SDL_JoyButtonEvent *buttonevent, input_event_type type )
@@ -232,9 +242,13 @@ do_hat( int which, Uint8 value, Uint8 mask, input_key direction )
   }
 }
 
+#endif
+
 void
 ui_joystick_end( void )
 {
+#ifdef FSEMU
+#else
   if( joystick1 != NULL || joystick2 != NULL ) {
 
     SDL_JoystickEventState( SDL_IGNORE );
@@ -249,6 +263,7 @@ ui_joystick_end( void )
   SDL_QuitSubSystem( SDL_INIT_JOYSTICK );
 #else
   SDL_Quit();
+#endif
 #endif
 }
 

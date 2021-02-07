@@ -199,6 +199,9 @@ is_in_sound_enabled_range( void )
 void
 sound_init( const char *device )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_init\n");
+#endif
   float hz;
   double treble;
   Blip_Synth **ay_left_synth;
@@ -334,6 +337,9 @@ sound_init( const char *device )
 void
 sound_pause( void )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_pause\n");
+#endif
   if( sound_enabled )
     sound_end();
 }
@@ -341,9 +347,14 @@ sound_pause( void )
 void
 sound_unpause( void )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_unpause\n");
+  // We want to enable sound always (perhaps)
+#else
   /* No sound if fastloading in progress */
   if( settings_current.fastload && timer_fastloading_active() )
     return;
+#endif
 
   sound_init( settings_current.sound_device );
 }
@@ -351,6 +362,9 @@ sound_unpause( void )
 void
 sound_end( void )
 {
+#ifdef FSEMU
+  printf("[FUSE] sound_end\n");
+#endif
   if( sound_enabled ) {
     delete_Blip_Synth( &left_beeper_synth );
     delete_Blip_Synth( &right_beeper_synth );

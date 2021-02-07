@@ -27,7 +27,10 @@
 
 void sdlkeyboard_init(void);
 void sdlkeyboard_end(void);
+#ifdef FSEMU
+#else
 void sdlkeyboard_keypress(SDL_KeyboardEvent *keyevent);
 void sdlkeyboard_keyrelease(SDL_KeyboardEvent *keyevent);
+#endif
 
 #endif			/* #ifndef FUSE_SDLKEYBOARD_H */

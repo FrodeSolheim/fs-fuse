@@ -26,9 +26,12 @@
 #ifndef FUSE_SDLJOYSTICK_H
 #define FUSE_SDLJOYSTICK_H
 
+#ifdef FSEMU
+#else
 void sdljoystick_buttonpress( SDL_JoyButtonEvent *buttonevent );
 void sdljoystick_buttonrelease( SDL_JoyButtonEvent *buttonevent );
 void sdljoystick_axismove( SDL_JoyAxisEvent *axisevent );
 void sdljoystick_hatmove( SDL_JoyHatEvent *hatevent );
+#endif
 
 #endif			/* #ifndef FUSE_SDLJOYSTICK_H */

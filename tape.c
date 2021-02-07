@@ -52,6 +52,10 @@
 #include "z80/z80.h"
 #include "z80/z80_macros.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse-media.h"
+#endif
+
 /* The current tape */
 static libspectrum_tape *tape;
 
@@ -162,6 +166,9 @@ tape_register_startup( void )
 int
 tape_open( const char *filename, int autoload )
 {
+#ifdef FSEMU
+  printf("[FUSE] tape_open filename=%s autoload=%d\n", filename, autoload);
+#endif
   utils_file file;
   int error;
 
@@ -182,6 +189,9 @@ int
 tape_read_buffer( unsigned char *buffer, size_t length, libspectrum_id_t type,
 		  const char *filename, int autoload )
 {
+#ifdef FSEMU
+  printf("[FUSE] tape_read_buffer filename=%s autoload=%d\n", filename, autoload);
+#endif
   int error;
 
   if( libspectrum_tape_present( tape ) ) {
@@ -193,6 +203,10 @@ tape_read_buffer( unsigned char *buffer, size_t length, libspectrum_id_t type,
 
   tape_modified = 0;
   ui_tape_browser_update( UI_TAPE_BROWSER_NEW_TAPE, NULL );
+
+#ifdef FSEMU
+  fsfuse_media_on_tape_open(filename);
+#endif
 
   if( autoload ) {
     error = tape_autoload( machine_current->machine );
@@ -261,6 +275,9 @@ tape_close( void )
   /* If the tape has been modified, check if we want to do this */
   if( tape_modified ) {
 
+#ifdef FSEMU
+// FIXME: No support for UI confirmation
+#endif
     confirm =
       ui_confirm_save( "Tape has been modified.\nDo you want to save it?" );
     switch( confirm ) {
@@ -274,6 +291,10 @@ tape_close( void )
 
     }
   }
+
+#ifdef FSEMU
+  fsfuse_media_on_tape_close();
+#endif
 
   /* Stop the tape if it's currently playing */
   if( tape_playing ) {

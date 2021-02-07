@@ -42,12 +42,20 @@
 #include "ui/uidisplay.h"
 #include "utils.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
 SDL_Surface *sdldisplay_gc = NULL;   /* Hardware screen */
 static SDL_Surface *tmp_screen=NULL; /* Temporary screen for scalers */
 
+#ifdef FSEMU
+// Not supported
+#else
 static SDL_Surface *red_cassette[2], *green_cassette[2];
 static SDL_Surface *red_mdr[2], *green_mdr[2];
 static SDL_Surface *red_disk[2], *green_disk[2];
+#endif
 
 static ui_statusbar_state sdl_disk_state, sdl_mdr_state, sdl_tape_state;
 static int sdl_status_updated;
@@ -84,9 +92,13 @@ static SDL_Rect updated_rects[MAX_UPDATE_RECT];
 static int num_rects = 0;
 static libspectrum_byte sdldisplay_force_full_refresh = 1;
 
+#ifdef FSEMU
+// Not used
+#else
 static int max_fullscreen_height;
 static int min_fullscreen_height;
 static int fullscreen_width = 0;
+#endif
 static int fullscreen_x_off = 0;
 static int fullscreen_y_off = 0;
 
@@ -141,6 +153,10 @@ init_scalers( void )
     scaler_select_scaler( SCALER_NORMAL );
   }
 }
+
+#ifdef FSEMU
+// Don't have palette support
+#else
 
 static int
 sdl_convert_icon( SDL_Surface *source, SDL_Surface **icon, int red )
@@ -213,9 +229,23 @@ sdl_load_status_icon( const char*filename, SDL_Surface **red, SDL_Surface **gree
   return 0;
 }
 
+#endif
+
 int
 uidisplay_init( int width, int height )
 {
+#ifdef FSEMU
+#ifdef FSEMU2
+#else
+    int fullscreen = 0;
+    int vsync = 0;
+    fsemu_startupinfo_set_emulator_fork_info("Fuse");
+    fsemu_video_disallow_vsync(1);
+    fsemu_helper_init_emulator("Fuse-FS", true, FSEMU_VIDEO_RENDERER_OPENGL,
+                               fullscreen, vsync);
+    fsemu_thread_set_emu();
+#endif
+#else
   SDL_Rect **modes;
   int no_modes;
   int i, mw = 0, mh = 0, mn = 0;
@@ -277,6 +307,7 @@ uidisplay_init( int width, int height )
       min_fullscreen_height = modes[i]->h;
     }
   }
+#endif
 
   image_width = width;
   image_height = height;
@@ -290,14 +321,32 @@ uidisplay_init( int width, int height )
 
   if( sdldisplay_load_gfx_mode() ) return 1;
 
+#ifdef FSEMU
+  // Handled by FSEMU
+#else
   SDL_WM_SetCaption( "Fuse", "Fuse" );
+#endif
 
   /* We can now output error messages to our output device */
   display_ui_initialised = 1;
 
+#ifdef FSEMU
+  // Not supported
+
+#ifdef FSEMU2
+  // Too soon?
+  double hz = (double) machine_current->timings.processor_speed /
+              machine_current->timings.tstates_per_frame;
+  printf("First fsemu_frame_start hz=%f\n", hz);
+  // printf("Tape file: %s\n", settings_current.tape_file);
+  fsemu_frame_start(hz);
+#endif
+
+#else
   sdl_load_status_icon( "cassette.bmp", red_cassette, green_cassette );
   sdl_load_status_icon( "microdrive.bmp", red_mdr, green_mdr );
   sdl_load_status_icon( "plus3disk.bmp", red_disk, green_disk );
+#endif
 
   return 0;
 }
@@ -325,6 +374,9 @@ sdldisplay_allocate_colours( int numColours, Uint32 *colour_values,
   return 0;
 }
 
+#ifdef FSEMU
+// Not used
+#else
 static void
 sdldisplay_find_best_fullscreen_scaler( void )
 {
@@ -363,6 +415,7 @@ sdldisplay_find_best_fullscreen_scaler( void )
     }
   }
 }
+#endif
 
 static int
 sdldisplay_load_gfx_mode( void )
@@ -382,9 +435,49 @@ sdldisplay_load_gfx_mode( void )
 
   sdldisplay_current_size = scaler_get_scaling_factor( current_scaler );
 
+#ifdef FSEMU
+  // Use the scaler we've specified.
+#else
   sdldisplay_find_best_fullscreen_scaler();
+#endif
 
+printf("AAAA\n");
   /* Create the surface that contains the scaled graphics in 16 bit mode */
+#ifdef FSEMU
+
+  if (sdldisplay_gc) {
+    SDL_FreeSurface(sdldisplay_gc);
+  }
+
+  sdldisplay_gc = SDL_CreateRGBSurface(
+              0,
+              image_width * sdldisplay_current_size,
+              image_height * sdldisplay_current_size, 16, 0, 0, 0, 0);
+  printf("%d %d (%.2f) -> %p\n", image_width, image_height, sdldisplay_current_size, sdldisplay_gc);
+
+#ifdef FSGS_XXX
+  fsgs_create_window(settings_current.full_screen ? 1 : 0);
+  /*
+  fsgs_set_crop((32 - 6) * sdldisplay_current_size,
+                (24 - 6) * sdldisplay_current_size,
+                (256 + 6 * 2) * sdldisplay_current_size,
+                (192 + 6 * 2) * sdldisplay_current_size);
+  */
+  fsgs_set_border_crop(FSGS_NO_BORDER,
+                       (32 - 0) * sdldisplay_current_size,
+                       (24 - 0) * sdldisplay_current_size,
+                       (256 + 0 * 2) * sdldisplay_current_size,
+                       (192 + 0 * 2) * sdldisplay_current_size);
+  fsgs_set_border_crop(FSGS_SMALL_BORDER,
+                       (32 - 6) * sdldisplay_current_size,
+                       (24 - 6) * sdldisplay_current_size,
+                       (256 + 6 * 2) * sdldisplay_current_size,
+                       (192 + 6 * 2) * sdldisplay_current_size);
+  // ZX Spectrum has about 1.0 pixel aspect ratio? Maybe not quite?
+  // fsgs_set_aspect(1.0);
+#endif
+
+#else
   sdldisplay_gc = SDL_SetVideoMode(
     settings_current.full_screen && fullscreen_width ? fullscreen_width :
       image_width * sdldisplay_current_size,
@@ -394,13 +487,18 @@ sdldisplay_load_gfx_mode( void )
     settings_current.full_screen ? (SDL_FULLSCREEN|SDL_SWSURFACE)
                                  : SDL_SWSURFACE
   );
+#endif
   if( !sdldisplay_gc ) {
     fprintf( stderr, "%s: couldn't create SDL graphics context\n", fuse_progname );
     fuse_abort();
   }
 
+#ifdef FSEMU
+  // FIXME: Get from fsemu?
+#else
   settings_current.full_screen =
       !!( sdldisplay_gc->flags & ( SDL_FULLSCREEN | SDL_NOFRAME ) );
+#endif
   sdldisplay_is_full_screen = settings_current.full_screen;
 
   /* Distinguish 555 and 565 mode */
@@ -412,6 +510,17 @@ sdldisplay_load_gfx_mode( void )
   /* Create the surface used for the graphics in 16 bit before scaling */
 
   /* Need some extra bytes around when using 2xSaI */
+#ifdef FSEMU
+  tmp_screen_pixels = (Uint16*)calloc(tmp_screen_width*(image_height+3), sizeof(Uint16));
+  tmp_screen = SDL_CreateRGBSurfaceFrom(tmp_screen_pixels,
+                                        tmp_screen_width,
+                                        image_height + 3,
+                                        16, tmp_screen_width*2,
+                                        0,
+                                        0,
+                                        0,
+                                        0);
+#else
   tmp_screen_pixels = (Uint16*)calloc(tmp_screen_width*(image_height+3), sizeof(Uint16));
   tmp_screen = SDL_CreateRGBSurfaceFrom(tmp_screen_pixels,
                                         tmp_screen_width,
@@ -421,6 +530,7 @@ sdldisplay_load_gfx_mode( void )
                                         sdldisplay_gc->format->Gmask,
                                         sdldisplay_gc->format->Bmask,
                                         sdldisplay_gc->format->Amask );
+#endif
 
   if( !tmp_screen ) {
     fprintf( stderr, "%s: couldn't create tmp_screen\n", fuse_progname );
@@ -454,9 +564,16 @@ uidisplay_hotswap_gfx_mode( void )
   /* Setup the new GFX mode */
   if( sdldisplay_load_gfx_mode() ) return 1;
 
+#ifdef FSEMU
+  // Not supported
+#else
   /* reset palette */
   SDL_SetColors( sdldisplay_gc, colour_palette, 0, 16 );
+#endif
 
+#ifdef FSEMU
+  // Not needed
+#else
   /* Mac OS X resets the state of the cursor after a switch to full screen
      mode */
   if ( settings_current.full_screen || ui_mouse_grabbed ) {
@@ -465,6 +582,7 @@ uidisplay_hotswap_gfx_mode( void )
   } else {
     SDL_ShowCursor( SDL_ENABLE );
   }
+#endif
 
   fuse_emulation_unpause();
 
@@ -493,6 +611,10 @@ uidisplay_frame_restore( void )
     sdldisplay_force_full_refresh = 1;
   }
 }
+
+#ifdef FSEMU
+// Not used
+#else
 
 static void
 sdl_blit_icon( SDL_Surface **icon,
@@ -600,6 +722,8 @@ sdl_icon_overlay( Uint32 tmp_screen_pitch, Uint32 dstPitch )
 
   sdl_status_updated = 0;
 }
+
+#endif
 
 /* Set one pixel in the display */
 void
@@ -744,9 +868,23 @@ uidisplay_plot16( int x, int y, libspectrum_word data,
   }
 }
 
+#ifdef FSEMU
+void finalize_frame(fsemu_video_frame_t *frame)
+{
+  // fsemu_video_frame_t *frame = (SDL_Surface) *data;
+  // fsemu_video_frame_t *frame = (SDL_Surface) *data;
+  // SDL_FreeSurface((SDL_Surface *) frame->finalize_data);
+  free(frame->finalize_data);
+}
+#endif
+
 void
 uidisplay_frame_end( void )
 {
+#ifdef FSEMU
+  fsemu_frame_log_epoch("uidisplay_frame_end\n");
+#endif
+
   SDL_Rect *r;
   Uint32 tmp_screen_pitch, dstPitch;
   SDL_Rect *last_rect;
@@ -760,6 +898,9 @@ uidisplay_frame_end( void )
     fuse_abort();
   }
 
+#ifdef FSEMU
+  sdldisplay_force_full_refresh = 1;
+#endif
   /* Force a full redraw if requested */
   if ( sdldisplay_force_full_refresh ) {
     num_rects = 1;
@@ -781,7 +922,10 @@ uidisplay_frame_end( void )
 
   last_rect = updated_rects + num_rects;
 
+#ifdef FSEMU_XXX
+#else
   for( r = updated_rects; r != last_rect; r++ ) {
+    // printf("RECT %d %d %d %d\n", r->x, r->y, r->w, r->h);
 
     int dst_y = r->y * sdldisplay_current_size + fullscreen_y_off;
     int dst_h = r->h;
@@ -803,15 +947,117 @@ uidisplay_frame_end( void )
     r->y = dst_y;
     r->w *= sdldisplay_current_size;
     r->h = dst_h * sdldisplay_current_size;
-  }
 
+    // printf("  -> %d %d %d %d\n", r->x, r->y, r->w, r->h);
+  }
+#endif
+
+#ifdef FSEMU
+  // Not supported
+#else
   if ( settings_current.statusbar )
     sdl_icon_overlay( tmp_screen_pitch, dstPitch );
+#endif
 
   if( SDL_MUSTLOCK( sdldisplay_gc ) ) SDL_UnlockSurface( sdldisplay_gc );
 
+#ifdef FSEMU
+  
+  // Reset r to first (and only) rect
+  r = updated_rects;
+  static SDL_Surface* dummy;
+  if (dummy == NULL) {
+    dummy = SDL_CreateRGBSurface(0, 1, 1, 32, 0, 0, 0, 0);
+  }
+
+  // printf("%d %d %d %d\n", r->x, r->y, r->w, r->h);
+
+#if 1
+  int tmp_w = sdldisplay_gc->w;
+  int tmp_h = sdldisplay_gc->h;
+  sdldisplay_gc->w = r->w;
+  sdldisplay_gc->h = r->h;
+  // FIXME: Don't reallocate new surfaces every time
+  // SDL_Surface *rgba = SDL_ConvertSurface(sdldisplay_gc, dummy->format, 0);
+  // SDL_Surface *rgba = SDL_ConvertSurface(sdldisplay_gc, sdldisplay_gc->format, 0);
+
+  // Could also do this without mallocing per frame, and instead swap between
+  // two pre-allocated buffers here...
+  void *pixels = malloc(sdldisplay_gc->pitch * sdldisplay_gc->h);
+  memcpy(pixels, sdldisplay_gc->pixels, sdldisplay_gc->pitch * sdldisplay_gc->h);
+  sdldisplay_gc->w = tmp_w;
+  sdldisplay_gc->h = tmp_h;
+#else
+  int tmp_w = tmp_screen->w;
+  int tmp_h = tmp_screen->h;
+  tmp_screen->w = r->w;
+  tmp_screen->h = r->h;
+  SDL_Surface *rgba = SDL_ConvertSurface(tmp_screen, dummy->format, 0);
+  tmp_screen->w = tmp_w;
+  tmp_screen->h = tmp_h;
+#endif
+
+  fsemu_frame_add_emulation_time(0);
+
+  fsemu_video_frame_t *frame = fsemu_video_alloc_frame();
+
+  // frame->layer = 0;
+  // frame->buffer = rgba->pixels;
+  // frame->stride = rgba->pitch;
+  // frame->depth = 32;  // FIXME
+  frame->buffer = pixels;
+  frame->stride = sdldisplay_gc->pitch;
+  frame->depth = 16;  // FIXME
+  frame->width = r->w;
+  frame->height = r->h;
+  // frame->partial = 0;
+  frame->frequency = 50;  // FIXME
+  // frame->limits.x = 0;
+  // frame->limits.y = 0;
+  frame->limits.w = r->w;
+  frame->limits.h = r->h;
+
+  frame->finalize = finalize_frame;
+  // frame->finalize_data = rgba;
+  frame->finalize_data = pixels;
+  // frame->flags = 0;
+
+  static int current_frame_no = 0;
+  frame->number = current_frame_no;
+
+  fsemu_video_post_frame(frame);
+#ifdef FSEMU2
+#else
+  fsemu_video_work(0);
+#endif
+
+  // Handle by finalize function
+  // SDL_FreeSurface(rgba);
+
+  // fsemu_time_sleep_until_us(fsemu_frame_end_at);
+  // // while (fsemu_time_us() < fsemu_frame_end_at) {
+  // // }
+  // if (fsemu_time_us() > fsemu_frame_end_at + 1000) {
+  //   printf("Overslept %d\n", (int) (fsemu_time_us() - fsemu_frame_end_at));
+  // }
+  // fsemu_frame_add_sleep_time(0);
+
+  fsemu_frame_end();
+  // printf("Tape file: %s\n", settings_current.tape_file);
+
+  // Important to use as close to real (emulated) Hz as possible here, so that
+  // the audio system knows how much data to expect and can correct if video
+  // output rate deviates from the emulated frame rate.
+  double hz = (double) machine_current->timings.processor_speed /
+              machine_current->timings.tstates_per_frame;
+
+  fsemu_frame_start(hz);
+  // fsemu_time_sleep_until_us(fsemu_frame_begin_at);
+
+#else
   /* Finally, blit all our changes to the screen */
   SDL_UpdateRects( sdldisplay_gc, num_rects, updated_rects );
+#endif
 
   num_rects = 0;
   sdldisplay_force_full_refresh = 0;
@@ -844,7 +1090,10 @@ uidisplay_area( int x, int y, int width, int height )
 int
 uidisplay_end( void )
 {
+#ifdef FSEMU
+#else
   int i;
+#endif
 
   display_ui_initialised = 0;
 
@@ -857,6 +1106,9 @@ uidisplay_end( void )
     SDL_FreeSurface( saved ); saved = NULL;
   }
 
+#ifdef FSEMU
+  // Not supported
+#else
   for( i=0; i<2; i++ ) {
     if ( red_cassette[i] ) {
       SDL_FreeSurface( red_cassette[i] ); red_cassette[i] = NULL;
@@ -877,6 +1129,7 @@ uidisplay_end( void )
       SDL_FreeSurface( green_disk[i] ); green_disk[i] = NULL;
     }
   }
+#endif
 
   return 0;
 }
@@ -916,3 +1169,14 @@ ui_statusbar_update( ui_statusbar_item item, ui_statusbar_state state )
             item );
   return 1;
 }
+
+#ifdef FSEMU
+
+void fusefs_media_state(int *disk_state, int *mdr_state, int *tape_state)
+{
+  *disk_state = sdl_disk_state;
+  *mdr_state = sdl_mdr_state;
+  *tape_state = sdl_tape_state;
+}
+
+#endif

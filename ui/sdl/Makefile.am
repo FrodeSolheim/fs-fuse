@@ -24,8 +24,6 @@ if UI_SDL
 
 fuse_SOURCES += $(ui_sdl_files)
 
-BUILT_SOURCES += $(ui_sdl_built)
-
 endif
 
 
@@ -40,9 +38,3 @@ ui_sdl_files = \
                ui/sdl/sdlkeyboard.h \
                ui/sdl/sdlui.c \
                ui/sdl/keysyms.c
-
-ui_sdl_built = ui/sdl/keysyms.c
-
-ui/sdl/keysyms.c: $(srcdir)/keysyms.pl $(srcdir)/keysyms.dat
-	@$(MKDIR_P) ui/sdl
-	$(AM_V_GEN)$(PERL) -I$(srcdir)/perl $(srcdir)/keysyms.pl sdl $(srcdir)/keysyms.dat > $@.tmp && mv $@.tmp $@

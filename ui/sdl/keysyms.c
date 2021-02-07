@@ -33,7 +33,67 @@
 
 #include <SDL.h>
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse-action.h"
+#endif
+
 keysyms_map_t keysyms_map[] = {
+#ifdef FSEMU
+  { FSFUSE_ACTION_KEY_0,            INPUT_KEY_0            },
+  { FSFUSE_ACTION_KEY_1,            INPUT_KEY_1            },
+  { FSFUSE_ACTION_KEY_2,            INPUT_KEY_2            },
+  { FSFUSE_ACTION_KEY_3,            INPUT_KEY_3            },
+  { FSFUSE_ACTION_KEY_4,            INPUT_KEY_4            },
+  { FSFUSE_ACTION_KEY_5,            INPUT_KEY_5            },
+  { FSFUSE_ACTION_KEY_6,            INPUT_KEY_6            },
+  { FSFUSE_ACTION_KEY_7,            INPUT_KEY_7            },
+  { FSFUSE_ACTION_KEY_8,            INPUT_KEY_8            },
+  { FSFUSE_ACTION_KEY_9,            INPUT_KEY_9            },
+
+  { FSFUSE_ACTION_KEY_Q,            INPUT_KEY_q            },
+  { FSFUSE_ACTION_KEY_W,            INPUT_KEY_w            },
+  { FSFUSE_ACTION_KEY_E,            INPUT_KEY_e            },
+  { FSFUSE_ACTION_KEY_R,            INPUT_KEY_r            },
+  { FSFUSE_ACTION_KEY_T,            INPUT_KEY_t            },
+  { FSFUSE_ACTION_KEY_Y,            INPUT_KEY_y            },
+  { FSFUSE_ACTION_KEY_U,            INPUT_KEY_u            },
+  { FSFUSE_ACTION_KEY_I,            INPUT_KEY_i            },
+  { FSFUSE_ACTION_KEY_O,            INPUT_KEY_o            },
+  { FSFUSE_ACTION_KEY_P,            INPUT_KEY_p            },
+
+  { FSFUSE_ACTION_KEY_A,            INPUT_KEY_a            },
+  { FSFUSE_ACTION_KEY_S,            INPUT_KEY_s            },
+  { FSFUSE_ACTION_KEY_D,            INPUT_KEY_d            },
+  { FSFUSE_ACTION_KEY_F,            INPUT_KEY_f            },
+  { FSFUSE_ACTION_KEY_G,            INPUT_KEY_g            },
+  { FSFUSE_ACTION_KEY_H,            INPUT_KEY_h            },
+  { FSFUSE_ACTION_KEY_J,            INPUT_KEY_j            },
+  { FSFUSE_ACTION_KEY_K,            INPUT_KEY_k            },
+  { FSFUSE_ACTION_KEY_L,            INPUT_KEY_l            },
+
+  { FSFUSE_ACTION_KEY_Z,            INPUT_KEY_z            },
+  { FSFUSE_ACTION_KEY_X,            INPUT_KEY_x            },
+  { FSFUSE_ACTION_KEY_C,            INPUT_KEY_c            },
+  { FSFUSE_ACTION_KEY_V,            INPUT_KEY_v            },
+  { FSFUSE_ACTION_KEY_B,            INPUT_KEY_b            },
+  { FSFUSE_ACTION_KEY_N,            INPUT_KEY_n            },
+  { FSFUSE_ACTION_KEY_M,            INPUT_KEY_m            },
+
+  { FSFUSE_ACTION_KEY_CAPSSHIFT,    INPUT_KEY_Shift_L      },
+  { FSFUSE_ACTION_KEY_SYMBOLSHIFT,  INPUT_KEY_Control_L    },
+  { FSFUSE_ACTION_KEY_ENTER,        INPUT_KEY_Return       },
+  { FSFUSE_ACTION_KEY_SPACE,        INPUT_KEY_space        },
+
+  { FSFUSE_ACTION_KEY_UP,           INPUT_KEY_Up           },
+  { FSFUSE_ACTION_KEY_DOWN,         INPUT_KEY_Down         },
+  { FSFUSE_ACTION_KEY_LEFT,         INPUT_KEY_Left         },
+  { FSFUSE_ACTION_KEY_RIGHT,        INPUT_KEY_Right        },
+
+  // { FSFUSE_ACTION_KEY_F1,           INPUT_KEY_F1            },
+  // { FSFUSE_ACTION_KEY_ESCAPE,       INPUT_KEY_Escape        },
+
+
+#else
 
   { SDLK_TAB,          INPUT_KEY_Tab          },
   { SDLK_RETURN,       INPUT_KEY_Return       },
@@ -131,12 +191,17 @@ keysyms_map_t keysyms_map[] = {
   { SDLK_RCTRL,        INPUT_KEY_Control_R    },
   { SDLK_LALT,         INPUT_KEY_Alt_L        },
   { SDLK_RALT,         INPUT_KEY_Alt_R        },
+#ifdef FSEMU
+  { SDLK_LGUI,         INPUT_KEY_Super_L      },
+  { SDLK_RGUI,         INPUT_KEY_Super_R      },
+#else
   { SDLK_LMETA,        INPUT_KEY_Meta_L       },
   { SDLK_RMETA,        INPUT_KEY_Meta_R       },
   { SDLK_LSUPER,       INPUT_KEY_Super_L      },
   { SDLK_RSUPER,       INPUT_KEY_Super_R      },
+#endif
   { SDLK_MENU,         INPUT_KEY_Mode_switch  },
-
+#endif  // FSEMU
   { 0, 0 }			/* End marker: DO NOT MOVE! */
 
 };

@@ -38,6 +38,10 @@
 #include "ui/ui.h"
 #include "utils.h"
 
+#ifdef FSEMU_XXX
+#include "fsgs.h"
+#endif
+
 #define MONO_BITMAP_SIZE 6144
 #define HICOLOUR_SCR_SIZE (2 * MONO_BITMAP_SIZE)
 #define MLT_SIZE (2 * MONO_BITMAP_SIZE)
@@ -110,6 +114,17 @@ screenshot_write( const char *filename, scaler_type scaler )
 
   for( y = 0; y < height; y++ )
     row_pointers[y] = &png_data[ y * png_stride ];
+
+#ifdef FSEMU_XXX
+  int scx, scy, scw, sch;
+  if (fsgs_screenshot_crop(&scx, &scy, &scw, &sch)) {
+    width = scw;
+    height = sch;
+    for( y = 0; y < height; y++ ) {
+      row_pointers[y] = &png_data[ (y + scy) * png_stride + scx * 3];
+    }
+  }
+#endif
 
   f = fopen( filename, "wb" );
   if( !f ) {

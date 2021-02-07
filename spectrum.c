@@ -50,6 +50,10 @@
 #include "ui/uijoystick.h"
 #include "z80/z80.h"
 
+#ifdef FSEMU
+#include "fsfuse/fsfuse.h"
+#endif
+
 /* 1040 KB of RAM */
 libspectrum_byte RAM[ SPECTRUM_RAM_PAGES ][0x4000];
 
@@ -139,6 +143,9 @@ spectrum_register_startup( void )
 int
 spectrum_frame( void )
 {
+#ifdef FSEMU
+  fsemu_frame_log_epoch("spectrum_frame\n");
+#endif
   libspectrum_dword frame_length;
 
   /* Reduce the t-state count of both the processor and all the events
@@ -152,6 +159,10 @@ spectrum_frame( void )
   tstates -= frame_length;
   if( z80.interrupts_enabled_at >= 0 )
     z80.interrupts_enabled_at -= frame_length;
+
+#ifdef FSEMU
+  fsemu_frame_log_epoch("done emulating?\n");
+#endif
 
   if( sound_enabled ) sound_frame();
 
@@ -168,6 +179,10 @@ spectrum_frame( void )
   phantom_typist_frame();
 
   frames_since_reset++;
+
+#ifdef FSEMU
+  fsemu_frame_log_epoch("spectrum_frame end\n");
+#endif
 
   return 0;
 }

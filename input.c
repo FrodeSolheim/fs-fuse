@@ -370,6 +370,10 @@ do_joystick( const input_event_joystick_t *joystick_event, int press )
     return 0;
   }
 
+#ifdef FSEMU
+  printf("do_joystick\n");
+  // Don't want "random" button to open menu
+#else
 #ifndef GEKKO /* Home button opens the menu on Wii */
   switch( joystick_event->button ) {
   case INPUT_JOYSTICK_FIRE_2:
@@ -380,6 +384,7 @@ do_joystick( const input_event_joystick_t *joystick_event, int press )
 
   }
 #endif  /* #ifndef GEKKO */
+#endif
 
 #endif				/* #ifdef USE_WIDGET */
 

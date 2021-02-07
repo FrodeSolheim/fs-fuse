@@ -78,14 +78,42 @@ compat_get_next_path( path_context *ctx )
   case 1:
 
     switch( ctx->type ) {
+#ifdef FSEMU
+    case UTILS_AUXILIARY_LIB: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "../../Data"; break;
+#else
     case UTILS_AUXILIARY_LIB: path_segment = "lib"; break;
     case UTILS_AUXILIARY_ROM: path_segment = "roms"; break;
     case UTILS_AUXILIARY_WIDGET: path_segment = "ui/widget"; break;
     case UTILS_AUXILIARY_GTK: path_segment = "ui/gtk"; break;
+#endif
     default:
       ui_error( UI_ERROR_ERROR, "unknown auxiliary file type %d", ctx->type );
       return 0;
     }
+
+#ifdef FSEMU
+  case 1:
+
+    switch( ctx->type ) {
+#ifdef FSEMU
+    case UTILS_AUXILIARY_LIB: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "../../Data"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "../../Data"; break;
+#else
+    case UTILS_AUXILIARY_LIB: path_segment = "lib"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "roms"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "ui/widget"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "ui/gtk"; break;
+#endif
+    default:
+      ui_error( UI_ERROR_ERROR, "unknown auxiliary file type %d", ctx->type );
+      return 0;
+    }
+#endif
 
     if( compat_is_absolute_path( fuse_progname ) ) {
       strncpy( buffer, fuse_progname, PATH_MAX );

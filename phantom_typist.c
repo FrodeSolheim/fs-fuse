@@ -166,12 +166,25 @@ static struct state_info_t state_info[] = {
   { { 0, 0 }, NULL, 0, 0 },
   { { 0, 0 }, NULL, 0, 0 },
 
+#ifdef FSEMU
+  /* A bit slower presses than default, to avoid flickering. */
+  { { KEYBOARD_j, KEYBOARD_NONE }, NULL, PHANTOM_TYPIST_STATE_QUOTE1, 75 },
+  { { KEYBOARD_Symbol, KEYBOARD_p }, t_colon_or_quote, 0, 5 },
+  { { KEYBOARD_Symbol, KEYBOARD_p }, code_or_enter, 0, 5 },
+  { { KEYBOARD_Enter, KEYBOARD_NONE }, next_command_or_end, 0, 50 },
+#else
   { { KEYBOARD_j, KEYBOARD_NONE }, NULL, PHANTOM_TYPIST_STATE_QUOTE1, 8 },
   { { KEYBOARD_Symbol, KEYBOARD_p }, t_colon_or_quote, 0, 0 },
   { { KEYBOARD_Symbol, KEYBOARD_p }, code_or_enter, 0, 5 },
   { { KEYBOARD_Enter, KEYBOARD_NONE }, next_command_or_end, 0, 0 },
-  
+#endif
+
+#ifdef FSEMU
+  /* A bit longer wait than default, to avoid "flickering". */
+  { { KEYBOARD_Enter, KEYBOARD_NONE }, NULL, PHANTOM_TYPIST_STATE_WAIT_AFTER_ENTER, 150 },
+#else
   { { KEYBOARD_Enter, KEYBOARD_NONE }, NULL, PHANTOM_TYPIST_STATE_WAIT_AFTER_ENTER, 3 },
+#endif
   /* This state is here to "swallow" the pause while the +3 checks for a disk */
   { { KEYBOARD_NONE, KEYBOARD_NONE }, NULL, PHANTOM_TYPIST_STATE_INACTIVE, 600 },
 

@@ -30,11 +30,19 @@
 double
 timer_get_time( void )
 {
+#ifdef FSEMU_XXX
+  // FIXME:
+  return fsemu_time_us() / 1000000.0;
+#else
   return SDL_GetTicks() / 1000.0;
+#endif
 }
 
 void
 timer_sleep( int ms )
 {
+#ifdef FSEMU
+  printf("WARNING: timer_sleep %d ms\n", ms);
+#endif
   SDL_Delay( ms );
 }

@@ -1,3 +1,10 @@
+# To avoid confusion when running the incorrect Makefile during development
+
+.DEFAULT_GOAL := fsplugin-build
+
+fsplugin-build:
+	make -C fsplugin
+
 ## Process this file with automake to produce Makefile.in
 ## Copyright (c) 1999-2015 Philip Kendall
 
@@ -55,6 +62,17 @@ fuse_SOURCES = display.c \
 	uidisplay.c \
 	uimedia.c \
 	utils.c
+
+fuse_SOURCES += \
+	fsemu/src/fsemu-all.c \
+	fsfuse/fsfuse-action.c \
+	fsfuse/fsfuse-config.c \
+	fsfuse/fsfuse-input.c \
+	fsfuse/fsfuse-keyboard.c \
+	fsfuse/fsfuse-leds.c \
+	fsfuse/fsfuse-main.c \
+	fsfuse/fsfuse-media.c \
+	fsfuse/fsfuse-oskeyboard.c
 
 fuse_LDADD = \
              $(PTHREAD_LIBS) \
@@ -160,7 +178,7 @@ fuse_LDADD += windres.o
 fuse_DEPENDENCIES += windres.o
 
 windres.o: windres.rc data/win32/winfuse.ico data/win32/fuse.manifest $(ui_win32_res)
-	$(AM_V_GEN)$(WINDRES) -I$(srcdir) -I. $(srcdir)/windres.rc $(LIBSPECTRUM_CFLAGS) $(CPPFLAGS) windres.o
+	$(AM_V_GEN)$(WINDRES) -I$(srcdir) -I. $(srcdir)/windres.rc windres.o
 
 endif
 

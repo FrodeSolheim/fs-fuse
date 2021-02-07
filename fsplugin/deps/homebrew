@@ -1,0 +1,10 @@
+autoconf
+automake
+gettext
+glib
+libpng
+libsamplerate
+libtool
+pkg-config
+sdl2
+sdl2_ttf
