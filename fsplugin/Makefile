@@ -7,6 +7,16 @@ include fsemu.mk
 current_dir = $(shell pwd)
 install_dir = ${current_dir}/build
 
+ifeq (${os},macOS)
+# Workaround for stupid macOS bug where /libxml2 is missing after /include
+xml_cflags = $(shell xml2-config --cflags | sed s./include./include/libxml2. | sed s./libxml2/libxml2./libxml2. )
+xml_libs = $(shell xml2-config --libs)
+else
+# Leaving blank to let the system find these via pkg-config as normal
+xml_cflags =
+xml_libs =
+endif
+
 bootstrap:
 	cd ../libspectrum && ./autogen.sh
 	cd .. && ./autogen.sh
@@ -25,6 +35,8 @@ ifeq (${os},Windows)
 endif
 	cd .. && ./configure \
 		CPPFLAGS="${cppflags}" \
+		XML_CFLAGS="${xml_cflags}" \
+		XML_LIBS="${xml_libs}" \
 		LIBS="${libs}" \
 		LIBSPECTRUM_CFLAGS="-I${install_dir}/include" \
 		LIBSPECTRUM_LIBS="-L${install_dir}/lib -L${install_dir}/lib64 -lspectrum" \
@@ -42,10 +54,10 @@ build-fuse:
 
 ifeq (${os},Windows)
 ../${executable}${exe}: ../.libs/fuse${exe}
-	cp ../.libs/fuse${exe} ../${executable}${exe}
+	cp -p ../.libs/fuse${exe} ../${executable}${exe}
 else
 ../${executable}${exe}: ../fuse${exe}
-	cp ../fuse${exe} ../${executable}${exe}
+	cp -p ../fuse${exe} ../${executable}${exe}
 endif
 
 build: build-fuse ../${executable}${exe}

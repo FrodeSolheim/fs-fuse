@@ -21,7 +21,6 @@ arch := x86-64
 exe :=
 dll := .so
 opengl_libs := -framework OpenGL
-fsemu_cppflags += -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/libxml2
 fsemu_libs += -framework IOKit -framework CoreFoundation
 # -lGLEW
 else
