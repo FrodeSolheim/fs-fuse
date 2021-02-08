@@ -1,15 +1,15 @@
 version = $(shell cat VERSION)
 uname := $(shell uname -a)
 
+fsemu_cflags :=
+fsemu_libs := -lpng -lSDL2_ttf -lsamplerate
 glib_cflags = $(shell pkg-config --cflags glib-2.0)
 glib_libs = $(shell pkg-config --libs glib-2.0)
 
-fsemu_cppflags :=
-fsemu_libs := -lpng -lSDL2_ttf -lsamplerate
+arch = $(shell python3 checkarch.py)
 
 ifneq ($(findstring Msys,$(uname)),)
 os := Windows
-arch := x86-64
 exe := .exe
 dll := .dll
 opengl_libs := -lopengl32
@@ -17,7 +17,6 @@ opengl_libs := -lopengl32
 else
 ifneq ($(findstring Darwin,$(uname)),)
 os := macOS
-arch := x86-64
 exe :=
 dll := .so
 opengl_libs := -framework OpenGL
@@ -25,7 +24,6 @@ fsemu_libs += -framework IOKit -framework CoreFoundation
 # -lGLEW
 else
 os := Linux
-arch := x86-64
 exe :=
 dll := .so
 opengl_libs := -lGL
@@ -40,7 +38,7 @@ licenses_dir = ${plugin_dir}/Licenses
 locale_dir = ${plugin_dir}/Locale
 os_arch_dir = ${plugin_dir}/${os}/${arch}
 
-cppflags = -DFSGS -DFSEMU -DFSE ${glib_cflags} ${fsemu_cppflags}
+cppflags = -DFSGS -DFSEMU -DFSE ${glib_cflags} ${fsemu_cflags}
 libs = ${glib_libs} ${opengl_libs} ${fsemu_libs}
 
 fsemu-all: fsemu-build
