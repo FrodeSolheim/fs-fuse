@@ -31,11 +31,17 @@ sudo zypper install `grep . fsplugin/deps/opensuse | grep -v '#'`
 
 elif [ "`uname -s`" = "Darwin" ]; then
 
-echo "Installing dependencies for macOS"
+echo "Installing dependencies for macOS (Homebrew)"
 echo "(You need to have Homebrew (https://brew.sh/) install for this to work)"
 echo brew install `grep . fsplugin/deps/homebrew | grep -v '#'`
 brew install `grep . fsplugin/deps/homebrew | grep -v '#'`
 
+elif [ "`uname -o`" = "Msys" ]; then
+
+echo "Installing dependencies for Windows (MSYS2)"
+echo "(You need to run this from within the MSYS MinGW 64-bit shell)"
+echo pacman -S `grep . fsplugin/deps/msys2 | grep -v '#'`
+pacman -S `grep . fsplugin/deps/msys2 | grep -v '#'`
 else
 
 echo "This script does not support installing dependencies for you system"
