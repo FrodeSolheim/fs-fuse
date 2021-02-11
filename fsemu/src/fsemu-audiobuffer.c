@@ -411,7 +411,7 @@ double fsemu_audiobuffer_calculate_adjustment(void)
 
     double adjust = frame_rate_adjust + pid_adjust;
     // double adjust = frame_rate_adjust;
-
+#if 0
     printf("%0.1f Adjust %0.5f (%0.5f + PID %0.5f) Err %d sum %d\n",
            latency / 1000.0,
            adjust,
@@ -419,7 +419,7 @@ double fsemu_audiobuffer_calculate_adjustment(void)
            pid_adjust,
            error,
            error_sum);
-
+#endif
     fsemu_audio_log_trace(
         "%0.1f Adjust %0.5f (%0.5f + PID %0.5f) Err %d sum %d\n",
         latency / 1000.0,

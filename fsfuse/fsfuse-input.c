@@ -6,7 +6,9 @@ static struct {
     // int selected_state_slot;
 } fsuae_inputport;
 
-#define OPTION_ZXS_PORT_A "zxs_port_a"
+// #define OPTION_ZXS_PORT_A "zxs_port_a"
+#define OPTION_SPECTRUM_PORT_1 "spectrum_port_1"
+#define OPTION_SPECTRUM_PORT_2 "spectrum_port_2"
 
 #define MAP(input, output) \
     fsemu_inputmode_map(mode, FSEMU_INPUTDEVICE_##input, output)
@@ -150,9 +152,11 @@ static void fsfuse_input_configure_port(fsemu_inputport_t *port, int num)
 {
     if (num == 0) {
         fsemu_inputport_set_name(port, "Joystick Port");
-        fsemu_inputport_set_config_name(port, OPTION_ZXS_PORT_A);
+        fsemu_inputport_set_config_name(port, OPTION_SPECTRUM_PORT_1);
         // base = ACTION_JOYSTICK1_BEFOREFIRST;
     } else {
+        fsemu_inputport_set_name(port, "Joystick Port");
+        fsemu_inputport_set_config_name(port, OPTION_SPECTRUM_PORT_2);
         // fsemu_inputport_set_name(port, "Joystick Port 0");
         // fsemu_inputport_set_config_name(port, OPTION_JOYSTICK_PORT_0);
         // base = ACTION_JOYSTICK2_BEFOREFIRST;
@@ -200,7 +204,7 @@ void fsfuse_input_init(void)
 
     int port_a_mode_index = 1;
     const char *port_a_mode_str =
-        fsemu_option_const_string(OPTION_ZXS_PORT_A_MODE);
+        fsemu_option_const_string(OPTION_SPECTRUM_PORT_1_TYPE);
     if (port_a_mode_str != NULL) {
         if (strcmp(port_a_mode_str, "kempston") == 0) {
             port_a_mode_index = 1;
@@ -216,7 +220,7 @@ void fsfuse_input_init(void)
 
     int port_b_mode_index = 0;
     const char *port_b_mode_str =
-        fsemu_option_const_string(OPTION_ZXS_PORT_B_MODE);
+        fsemu_option_const_string(OPTION_SPECTRUM_PORT_2_TYPE);
     if (port_b_mode_str != NULL) {
         if (strcmp(port_b_mode_str, "kempston") == 0) {
             port_b_mode_index = 1;

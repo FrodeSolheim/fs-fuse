@@ -1,7 +1,9 @@
 #define FSEMU_INTERNAL 1
 #include "fsemu-inputport.h"
 
+#include "fsemu-glib.h"
 #include "fsemu-input.h"
+#include "fsemu-option.h"
 #include "fsemu-thread.h"
 #include "fsemu-util.h"
 
