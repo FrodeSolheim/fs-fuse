@@ -113,9 +113,9 @@ void fsfuse_config_init(void)
     printf("OPTION_ZXS_MODEL = %s\n", model);
     if (model != NULL) {
         if (strcmp(model, "16k") == 0 || strcmp(model, "16") == 0) {
-            fuse_setting("machine", "16k");
+            fuse_setting("machine", "16");
         } else if (strcmp(model, "48") == 0 || strcmp(model, "48k") == 0) {
-            fuse_setting("machine", "48k");
+            fuse_setting("machine", "48");
         } else if (strcmp(model, "128") == 0 || strcmp(model, "128k") == 0) {
             fuse_setting("machine", "128");
         } else if (strcmp(model, "+2") == 0 || strcmp(model, "plus2") == 0) {

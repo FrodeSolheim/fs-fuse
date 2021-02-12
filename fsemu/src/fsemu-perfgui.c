@@ -2,7 +2,7 @@
 // FSEMU library; Copyright (c) 2011-2021 Frode Solheim. See the file COPYING.
 // ----------------------------------------------------------------------------
 
-#define FSEMU_INTERNAL 1
+#define FSEMU_INTERNAL
 #include "fsemu-perfgui.h"
 
 #include <stdint.h>

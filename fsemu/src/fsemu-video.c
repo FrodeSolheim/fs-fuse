@@ -1,4 +1,4 @@
-#define FSEMU_INTERNAL 1
+#define FSEMU_INTERNAL
 #include "fsemu-video.h"
 
 #include "fsemu-frame.h"
@@ -452,6 +452,12 @@ fsemu_video_frame_t *fsemu_video_get_frame(int timeout_us)
         frame = frame2;
     }
 #endif
+    if (frame->partial == 0 || frame->partial == frame->height) {
+        if (fsemu_screenshot_should_capture()) {
+            fsemu_screenshot_capture_video_frame(frame);
+        }
+    }
+
     return frame;
 }
 

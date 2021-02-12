@@ -1,7 +1,8 @@
-#define FSEMU_INTERNAL 1
+#define FSEMU_INTERNAL
 #include "fsemu-helper.h"
 
 #include "fsemu-action.h"
+#include "fsemu-application.h"
 #include "fsemu-background.h"
 #include "fsemu-controller.h"
 #include "fsemu-fade.h"
@@ -16,6 +17,7 @@
 #include "fsemu-osmenu.h"
 #include "fsemu-perfgui.h"
 #include "fsemu.h"
+#include "fsemu-screenshot.h"
 // FIXME: Ideally, remove this dependency
 #include "fsemu-sdlwindow.h"
 #include "fsemu-startupinfo.h"
@@ -48,9 +50,9 @@ void fsemu_helper_init_emulator(const char *emulator_name,
                     "Some features are not fully developed");
 
     fsemu_boot_log("before fsemu_thread_init");
-    // This call will also register the main thread.
+    // This call will also register the main thread
     fsemu_thread_init();
-    // Register main thread as video thread also.
+    // Register main thread as video thread also
     fsemu_thread_set_video();
 
     fsemu_boot_log("before fsemu_log_setup");
@@ -97,8 +99,15 @@ void fsemu_helper_init_emulator(const char *emulator_name,
     fsemu_boot_log("before fsemu_input_init");
     fsemu_input_init();
 
+    // Now, open the window and render the decorations
+
     fsemu_boot_log("before fsemu_helper_startup_loop");
     fsemu_helper_startup_loop();
+
+    // Continue with initialization
+
+    fsemu_application_init();
+    fsemu_screenshot_init();
 
     fsemu_boot_log("before fsemu_action_init");
     fsemu_action_init();
@@ -111,7 +120,7 @@ void fsemu_helper_init_emulator(const char *emulator_name,
     // FIXME: Postpone this until after the window is shown?
     fsemu_boot_log("before fsemu_gamemode_init");
     fsemu_gamemode_init();
-    // FIXME: Check (on Linux) if CPU governor is now set to performance.
+    // FIXME: Check (on Linux) if CPU governor is now set to performance
 
     fsemu_boot_log("before fsemu_leds_init");
     fsemu_leds_init();
@@ -248,7 +257,7 @@ void fsemu_helper_startup_loop(void)
         fsemu_helper_poll_and_sleep();
     }
 
-    // Resetting these to avoid confusion the frame timing system.
+    // Resetting these to avoid confusion the frame timing system
     fsemu_frame_number_rendering = -1;
     fsemu_frame_number_rendered = -1;
     fsemu_frame_number_displaying = -1;

@@ -1,4 +1,4 @@
-#define FSEMU_INTERNAL 1
+#define FSEMU_INTERNAL
 #include "fsemu-hud.h"
 
 #include "fsemu-control.h"
@@ -309,6 +309,24 @@ static void fsemu_hud_update_notice_positions(void)
     }
 }
 
+void fsemu_hud_notify(fsemu_hud_id_t id,
+                      const char *icon,
+                      const char *title,
+                      const char *subtitle)
+{
+    return fsemu_hud_notify_with_duration(
+        id, icon, title, subtitle, FSEMU_HUD_NOTIFICATION_DEFAULT_DURATION);
+}
+
+void fsemu_hud_notify_with_duration(fsemu_hud_id_t id,
+                                    const char *icon,
+                                    const char *title,
+                                    const char *subtitle,
+                                    int64_t duration)
+{
+    fsemu_hud_show_notification(id, title, subtitle, icon, duration);
+}
+
 void fsemu_hud_show_notification(fsemu_hud_id_t notification_id,
                                  const char *title,
                                  const char *sub_title,
@@ -317,7 +335,8 @@ void fsemu_hud_show_notification(fsemu_hud_id_t notification_id,
 {
     fsemu_assert(fsemu_hud.pending_notices != NULL);
 
-    fsemu_hud_notice_info_t *info = FSEMU_UTIL_MALLOC0(fsemu_hud_notice_info_t);
+    fsemu_hud_notice_info_t *info =
+        FSEMU_UTIL_MALLOC0(fsemu_hud_notice_info_t);
     info->id = notification_id;
     info->title = strdup(title ? title : "");
     info->sub_title = strdup(sub_title ? sub_title : "");
@@ -357,6 +376,8 @@ static void fsemu_hud_do_show_notification_new(fsemu_hud_notice_info_t *info)
                 free(info->icon_name);
                 // FIXME: notification text is not actually updated,
                 // TODO: Change widget text!
+                // fsemu_widget_ notice->title_item
+
                 notice->visible_until = fsemu_time_us() + info->duration_us;
                 return;
             }

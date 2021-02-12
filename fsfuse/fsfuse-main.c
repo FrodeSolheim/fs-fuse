@@ -37,6 +37,8 @@ int main(int argc, char **argv)
     fsfuse.argv = argv;
     fprintf(stderr, "FS-Fuse\n");
 
+    fsemu_application_set_name("FS-Fuse");
+    // FIXME: No longer needed?
     fsemu_set_emulator_name("FS-Fuse");
     fsemu_set_video_format_flags(FSEMU_VIDEO_FORMAT_FLAG_RGB565);
 

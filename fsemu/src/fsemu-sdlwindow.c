@@ -1,4 +1,4 @@
-#define FSEMU_INTERNAL 1
+#define FSEMU_INTERNAL
 #include "fsemu-sdlwindow.h"
 
 #ifdef FSEMU_SDL
@@ -1028,6 +1028,11 @@ bool fsemu_sdlwindow_handle_event(SDL_Event *event)
                    event->key.keysym.mod & FSEMU_KMOD_MOD) {
             fsemu_window_log_debug("MOD key held down\n");
             shortcut = true;
+        }
+        if (event->key.keysym.scancode == SDL_SCANCODE_PRINTSCREEN) {
+            fsemu_window_log_debug("SDL_SCANCODE_PRINTSCREEN\n");
+            fsemu_screenshot_capture();
+            return true;            
         }
         if (shortcut) {
             if (fsemu_sdlwindow_handle_keyboard_shortcut(event)) {

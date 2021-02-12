@@ -15,6 +15,7 @@ extern "C" {
 
 #include "fsemu-action.c"
 #include "fsemu-alsaaudio.c"
+#include "fsemu-application.c"
 #include "fsemu-audio.c"
 #include "fsemu-audiobuffer.c"
 #include "fsemu-background.c"
