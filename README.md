@@ -27,34 +27,13 @@ And finally build:
   manually (Accelerate loaders, etc works).
 - Combining Kempston joystick and Sinclair joystick interface might be buggy.
 
-## Todo
+## To-do
 
-- [DONE?] Support for two-sides tapes / media swap list.
-- [DONE?] Media swapping via on-screen menu.
-- [DONE?] Fast forward is not working correctly (when resuming).
-- UI and config support for a second joystick port.
-- On-screen LEDs needs to adapt to 16:10 and other display ratios.
-- Tape controls in user interface + keyboard shortcuts.
-- Close window button accessible via gamepad.
-- Official support for floppy drive (incl. media swapping).
-- Official support for loading snapshots as game media.
-- Better v-sync @ 50 Hz (needs tuning).
-- Adaptive audio buffer management (needs tweaking).
-- Support for zooming to game / crop overscan borders + default
-  gamepad buttons for this.
-- Savestates in user interface + keyboard shortcuts.
-- Make on-screen keyboard nicer.
-- More official options in .fs-fuse (add on demand when needed).
-- Check if we should use NSHighResolutionCapable in Info.plist (macOS).
-- Handle modified tapes somehow?
-- Close window button accessible via gamepad.
-- Joystick/gamepad support
-- Keyboard mapping for gamepads
-- [DONE?] Support for two-sides tapes / media swap list
-- [DONE] On-screen keyboard
-- [DONE] Define and use a .fs-fuse config file format?
+To-do list moved to https://github.com/FrodeSolheim/fs-fuse/issues.
 
 ## Changes
+
+FIMXE: Update this list
 
 Changes to the emulator include:
 

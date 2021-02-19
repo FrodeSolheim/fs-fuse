@@ -1,11 +1,11 @@
 #!/bin/sh
 set -e
 
-case "`pwd`" in 
-    *fs-fuse-private)
-        ../fs-uae-launcher-private/fs-uae-launcher --app=fs-fuse
+case "`pwd`" in
+    *-private)
+        exec ../fs-uae-launcher-private/fs-uae-launcher --app=fs-fuse "$@"
     ;;
     *)
-        ../fs-uae-launcher/fs-uae-launcher --app=fs-fuse
+        exec ../fs-uae-launcher/fs-uae-launcher --app=fs-fuse "$@"
     ;;
 esac
