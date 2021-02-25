@@ -328,6 +328,64 @@ def macos_iteration(app):
     return changes
 
 
+def fix_macos_binary_2(path, frameworks_dir):
+    print("fixing", path)
+    changes = 0
+    if not os.path.exists(path):
+        raise Exception("could not find " + repr(path))
+    args = ["otool", "-L", path]
+    p = subprocess.Popen(args, stdout=subprocess.PIPE)
+    # noinspection PyUnresolvedReferences
+    data = p.stdout.read().decode("UTF-8")
+    p.wait()
+    for line in data.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith("/usr/lib") or line.startswith("/System"):
+            # old = line.split(" ")[0]
+            continue
+        if line.startswith("@executable_path"):
+            continue
+        old = line.split(" ")[0]
+        if "Contents" in old:
+            continue
+        print(old)
+        old_dir, name = os.path.split(old)
+        new = old.replace(old, "@executable_path/../Frameworks/" + name)
+        dst = os.path.join(frameworks_dir, os.path.basename(old))
+        if not os.path.exists(dst):
+            print("COPYLIB", old)
+            shutil.copy(old, dst)
+            os.chmod(dst, 0o644)
+            changes += 1
+        if os.path.basename(path) == os.path.basename(old):
+            args = ["install_name_tool", "-id", new, path]
+        else:
+            args = ["install_name_tool", "-change", old, new, path]
+        print(args)
+        p = subprocess.Popen(args)
+        assert p.wait() == 0
+    return changes
+
+
+def macos_iteration_2(app):
+    binaries = []
+    mac_os_dir = os.path.join(app, "Contents", "MacOS")
+    frameworks_dir = os.path.join(app, "Contents", "Frameworks")
+    if not os.path.exists(frameworks_dir):
+        os.makedirs(frameworks_dir)
+    for name in os.listdir(mac_os_dir):
+        binaries.append(os.path.join(mac_os_dir, name))
+    # if os.path.exists(frameworks_dir):
+    for name in os.listdir(frameworks_dir):
+        binaries.append(os.path.join(frameworks_dir, name))
+    changes = 0
+    for binary in binaries:
+        changes += fix_macos_binary_2(binary, frameworks_dir)
+    return changes
+
+
 def macos_main():
     global rpath, no_copy
     if "--rpath" in sys.argv:
@@ -336,11 +394,15 @@ def macos_main():
     if "--no-copy" in sys.argv:
         sys.argv.remove("--no-copy")
         no_copy = True
-    app = sys.argv[1]
-    while True:
-        changes = macos_iteration(app)
-        if changes == 0:
-            break
+    app_dir = sys.argv[1]
+    for item in os.listdir(app_dir):
+        if not item.endswith(".app"):
+            continue
+        app = os.path.join(app_dir, item)
+        while True:
+            changes = macos_iteration_2(app)
+            if changes == 0:
+                break
 
 
 windows_system_dlls = [
