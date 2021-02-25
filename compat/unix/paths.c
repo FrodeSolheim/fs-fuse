@@ -33,6 +33,10 @@
 #include "fuse.h"
 #include "ui/ui.h"
 
+#ifdef FSEMU
+#include "../../fsemu/src/fsemu-all.h"
+#endif
+
 void get_relative_directory( char *buffer, size_t bufsize );
 
 const char*
@@ -62,6 +66,30 @@ compat_is_absolute_path( const char *path )
 int
 compat_get_next_path( path_context *ctx )
 {
+#ifdef FSEMU
+  // FIXME: Move to common function (unix + win32)
+  const char *path_segment;
+  if (ctx->state++ > 0) {
+    return 0;
+  }
+  if (fsemu_data_development_mode()) {
+    fsemu_application_exe_dir_strlcpy(ctx->path, PATH_MAX);
+    switch( ctx->type ) {
+    case UTILS_AUXILIARY_LIB: path_segment = "/lib"; break;
+    case UTILS_AUXILIARY_ROM: path_segment = "/roms"; break;
+    case UTILS_AUXILIARY_WIDGET: path_segment = "/ui/widget"; break;
+    case UTILS_AUXILIARY_GTK: path_segment = "/ui/gtk"; break;
+    default:
+      ui_error( UI_ERROR_ERROR, "unknown auxiliary file type %d", ctx->type );
+      return 0;
+    }
+    g_strlcat(ctx->path, path_segment, PATH_MAX);
+  } else {
+    fsemu_data_dir_strlcpy(ctx->path, PATH_MAX);
+  }
+  printf("compat_get_next_path: %s\n", ctx->path);
+  return 1;
+#else
   char buffer[ PATH_MAX ];
   const char *path_segment, *path2;
 
@@ -146,4 +174,5 @@ compat_get_next_path( path_context *ctx )
   }
   ui_error( UI_ERROR_ERROR, "unknown path_context state %d", ctx->state );
   fuse_abort();
+#endif
 }

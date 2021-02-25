@@ -4,7 +4,10 @@ appid = dev.solheim.fs-fuse
 
 include fsemu.mk
 
+cppflags += -DFSFUSE
+
 current_dir = $(shell pwd)
+libspectrum_prefix = ${current_dir}/../fsbuild/_libspectrum
 install_dir = ${current_dir}/build
 
 ifeq (${os},macOS)
@@ -22,10 +25,11 @@ bootstrap:
 	cd .. && ./autogen.sh
 
 configure:
-	echo ${install_dir}
+	echo ${libspectrum_prefix}
 	cd ../libspectrum && ./configure \
 		--disable-silent-rules \
-		--prefix=${install_dir} \
+		--prefix=${libspectrum_prefix} \
+		--without-bzip2 \
 		--without-libgcrypt \
 		--without-libaudiofile
 	cd ../libspectrum && make all install
@@ -38,8 +42,8 @@ endif
 		XML_CFLAGS="${xml_cflags}" \
 		XML_LIBS="${xml_libs}" \
 		LIBS="${libs}" \
-		LIBSPECTRUM_CFLAGS="-I${install_dir}/include" \
-		LIBSPECTRUM_LIBS="-L${install_dir}/lib -L${install_dir}/lib64 -lspectrum" \
+		LIBSPECTRUM_CFLAGS="-I${libspectrum_prefix}/include" \
+		LIBSPECTRUM_LIBS="-L${libspectrum_prefix}/lib -L${libspectrum_prefix}/lib64 -lspectrum" \
 		--prefix=${install_dir} \
 		--disable-silent-rules \
 		--without-gtk \
@@ -80,7 +84,7 @@ assemble:
 	echo ${version} > ${os_arch_dir}/Version.txt
 	cp ../${executable}${exe} ${os_arch_dir}/
 ifeq (${os},Windows)
-	cp ${install_dir}/bin/libspectrum-8.dll ${os_arch_dir}/
+	cp ${libspectrum_prefix}/bin/libspectrum-8.dll ${os_arch_dir}/
 endif
 
 	mkdir -p ${licenses_dir}

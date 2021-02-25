@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+fsdeps/dep/zlib
+
+PACKAGE=libxml2-2.9.10
+CHECKSUM=aafee193ffb8fe0c82d4afef6ef91972cbaf5feea100edc2f262750611b4be1f
+REVISION=1
+
+. fsdeps/dep.sh
+
+python3 fsdeps/download.py \
+ftp://xmlsoft.org/libxml2/$PACKAGE.tar.gz \
+sha256:$CHECKSUM
+
+rm -Rf fsdeps/_build && mkdir fsdeps/_build && cd fsdeps/_build
+tar xf ../_sources/$PACKAGE.tar.gz
+cd $PACKAGE
+
+# ./configure --help
+# exit 1
+./configure \
+--prefix=$PREFIX \
+--with-zlib \
+--without-lzma \
+--without-python \
+--without-icu \
+--without-iconv
+# FIXME: with iconv?
+make
+make install PREFIX=$PREFIX
+
+touch $INSTALLED
