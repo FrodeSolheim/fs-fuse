@@ -116,11 +116,13 @@ fsemu-package:
 	@echo Packaged ${version} for ${os}-${arch}
 
 fsemu-strip:
+ifneq (${executable},)
+ifeq (${os},macOS)
+	sh ../fsbuild/appify.sh ${os_arch_dir} ${plugin} ${executable} ${appid}
+endif
 	cd .. && python3 fsbuild/standalone.py fsplugin/${os_arch_dir}
 ifeq (${os},macOS)
-ifneq (${executable},)
-	sh appify.sh ${os_arch_dir} ${plugin} ${executable} ${appid}
-	python3 sign.py ${os_arch_dir}/${plugin}.app
-	python3 notarize.py ${os_arch_dir}/${plugin}.app ${appid}
+	# python3 sign.py ${os_arch_dir}/${plugin}.app
+	# python3 notarize.py ${os_arch_dir}/${plugin}.app ${appid}
 endif
 endif

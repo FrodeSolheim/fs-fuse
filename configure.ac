@@ -64,7 +64,6 @@ AC_PATH_PROG(PERL, perl)
 AC_SUBST(PERL)
 AM_PROG_LEX
 AC_PROG_YACC
-LT_INIT
 
 dnl Check for host specific programs
 case "$host_os" in

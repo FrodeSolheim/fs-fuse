@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+# Not doing fsdeps/clean here, but we could add an --clean-fsdeps
+# argument or something
+fsdeps/build
+
+fsdeps/use fsbuild/bootstrap
+fsdeps/use fsbuild/configure
+fsdeps/use fsbuild/clean
+
+fsdeps/use fsbuild/bootstrap
+fsdeps/use fsbuild/configure
+fsdeps/use fsbuild/build
+fsdeps/use fsbuild/bundle
+fsdeps/use fsbuild/sign
+fsdeps/use fsbuild/notarize
+fsdeps/use fsbuild/archive

@@ -29,6 +29,7 @@
 /depcomp
 .deps
 .dirstamp
+*.dll
 /fuse
 /fuse.dSYM
 /fuse.exe

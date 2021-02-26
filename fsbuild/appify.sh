@@ -1,13 +1,28 @@
 #!/bin/sh
 set -e
 
-rm -Rf "$1"/../macOSTemp
-mkdir -p "$1"/../macOSTemp/Contents/MacOS
-mv "$1"/* "$1"/../macOSTemp/Contents/MacOS/
-mv "$1"/../macOSTemp/Contents/MacOS/Version.txt "$1"/
+DIR=$1
+APP_NAME=$2
+EXECUTABLE=$3
+BUNDLE_ID=$4
 
-P="$1"/../macOSTemp/Contents/Info.plist
+TEMP_APP=fsbuild/_build/temp.app
 
+echo "Creating temporary app at $TEMP_APP"
+rm -Rf $TEMP_APP
+mkdir -p $TEMP_APP/Contents/MacOS
+# mv "$1"/* $TEMP_APP/Contents/MacOS/
+# mv $TEMP_APP/Contents/MacOS/Version.txt "$1"/
+echo "Move $DIR/$EXECUTABLE -> $TEMP_APP/Contents/MacOS/"
+mv $DIR/$EXECUTABLE $TEMP_APP/Contents/MacOS/
+
+echo "Move $DIR/\* -> $TEMP_APP/Contents/Resources/Data"
+mkdir -p $TEMP_APP/Contents/Resources/Data
+mv $DIR/* $TEMP_APP/Contents/Resources/Data/
+
+echo "Writing Info.plist"
+
+P=$TEMP_APP/Contents/Info.plist
 echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >> $P
 echo "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">" >> $P
 echo "<plist version=\"1.0\">" >> $P
@@ -15,15 +30,15 @@ echo "<dict>" >> $P
 echo "<key>CFBundleDevelopmentRegion</key>" >> $P
 echo "<string>English</string>" >> $P
 echo "<key>CFBundleDisplayName</key>" >> $P
-echo "<string>$2</string>" >> $P
+echo "<string>$APP_NAME</string>" >> $P
 echo "<key>CFBundleExecutable</key>" >> $P
-echo "<string>$3</string>" >> $P
+echo "<string>$EXECUTABLE</string>" >> $P
 echo "<key>CFBundleIdentifier</key>" >> $P
-echo "<string>$4</string>" >> $P
+echo "<string>$BUNDLE_ID</string>" >> $P
 echo "<key>CFBundleInfoDictionaryVersion</key>" >> $P
 echo "<string>6.0</string>" >> $P
 echo "<key>CFBundleName</key>" >> $P
-echo "<string>$2</string>" >> $P
+echo "<string>$APP_NAME</string>" >> $P
 echo "<key>CFBundlePackageType</key>" >> $P
 echo "<string>APPL</string>" >> $P
 echo "<key>CFBundleShortVersionString</key>" >> $P
@@ -45,4 +60,5 @@ echo "<integer>4</integer>" >> $P
 echo "</dict>" >> $P
 echo "</plist>" >> $P
 
-mv "$1"/../macOSTemp "$1"/$2.app
+echo "Moving $TEMP_APP -> $DIR/$APP_NAME.app"
+mv $TEMP_APP $DIR/$APP_NAME.app
