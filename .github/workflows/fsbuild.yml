@@ -95,11 +95,14 @@ jobs:
         path: fsbuild/_dist/*
 
     - name: Install dropbox package
+      if: github.ref == 'ref/head/master'
       run: python3 -m pip install dropbox
 
     - name: Upload build to Dropbox folder
+      if: github.ref == 'ref/head/master'
       run: fsbuild/upload
       env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
 
   macOS_x86-64:
@@ -171,11 +174,14 @@ jobs:
         path: fsbuild/_dist/*
 
     - name: Install dropbox package
+      if: github.ref == 'ref/head/master'
       run: python3 -m pip install dropbox
 
     - name: Upload build to Dropbox folder
+      if: github.ref == 'ref/head/master'
       run: fsbuild/upload
       env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}
 
   Windows_x86-64:
@@ -246,9 +252,12 @@ jobs:
         path: fsbuild/_dist/*
 
     - name: Install dropbox package
+      if: github.ref == 'ref/head/master'
       run: python3 -m pip install dropbox
 
     - name: Upload build to Dropbox folder
+      if: github.ref == 'ref/head/master'
       run: fsbuild/upload
       env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         DROPBOX_ACCESS_TOKEN: ${{ secrets.DROPBOX_ACCESS_TOKEN }}

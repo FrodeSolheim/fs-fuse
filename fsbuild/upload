@@ -3,6 +3,7 @@
 import os
 
 import dropbox
+import requests
 
 package_data = {}
 with open("PACKAGE.FS", "r") as f:
@@ -14,6 +15,17 @@ with open("PACKAGE.FS", "r") as f:
             pass
 
 
+def execute_discord_webhook(name, link):
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+    if not webhook_url:
+        return
+    content = (
+        f"`{name}` was built and uploaded to a Dropbox "
+        f"[shared folder]({link})"
+    )
+    requests.post(webhook_url, {"content": content, "username": "Builder"})
+
+
 def upload(dbx, package, version, path):
     print("Upload", path)
     name = os.path.basename(path)
@@ -23,6 +35,18 @@ def upload(dbx, package, version, path):
     with open(path, "rb") as f:
         dbx.files_upload(f.read(), dst)
     print("Uploaded ->", dst)
+    if os.getenv("DISCORD_WEBHOOK_URL"):
+        result = dbx.sharing_list_shared_links(f"/Builds/CI/{package}")
+        for link in result.links:
+            if link.path_lower == f"/Builds/CI/{package}".lower():
+                url = link.url
+                print("Found Dropbox shared link:", url)
+                break
+        else:
+            # Fallback URL, use first result returned
+            url = result.links[0].url
+            print("Found Dropbox shared (fallback) link:", url)
+        execute_discord_webhook(name, url)
 
 
 def main():
